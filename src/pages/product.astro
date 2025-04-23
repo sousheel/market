@@ -2,29 +2,69 @@
 import { onMount } from 'solid-js';
 import { client } from '../lib/crystallize';
 
-let products = null;
+// let products = null;
 
-onMount(async () => {
-    const response = await client.catalogueApi(
-      `
-        query ($language: String!, $path: String!, $version: VersionLabel) {
-          catalogue(path: $path, language: $language, version: $version) {
-            children {
-              id
-              name
-              path
+// onMount(async () => {
+    
+// });
+const response = await client.catalogueApi(
+    `
+    query ($language: String!, $path: String!, $version: VersionLabel!) {
+        catalogue(path: $path, language: $language, version: $version) {
+        children {
+            id
+            name
+            path
+            ... on Product {
+            variants {
+                name
+                sku
+                isDefault
+                firstImage {
+                  url
+                  key
+                  caption {
+                        plainText
+                    }
+                }
+                images {
+                    variants {
+                        url
+                        key
+                    }
+                    caption {
+                        plainText
+                    }
+                }
+                stock
+                price
+                productId
+                priceVariants {
+                    identifier
+                    price
+                }
+                stockLocations {
+                    identifier
+                    stock
+                }
+                attributes {
+                    attribute
+                    value
+                }
             }
-          }
         }
-      `,
-      {
-        language: "en",
-        path: "/t-shirts",
-        // version: version === 'draft' ? 'draft' : 'published',
-      }
-    );
-    products = response.catalogue;
-});
+        }
+    }
+    }
+    `,
+    {
+    language: "en",
+    path: "/dresses",
+    version: 'published',
+    }
+);
+const products = response.catalogue;
+console.log(products.children);
 ---
 
 <html>
@@ -36,12 +76,12 @@ onMount(async () => {
             <div>
                 <h1>{products.name}</h1>
                 <ul>
-                    {products.map((product) => (
+                    {products.children.map((product) => (
                     <li key={product.id}>
                         <a href={`/products/${product.path}`}></a>
                         <h2>{product.name}</h2>
-                        <img src={product.image.url} alt={product.name} />
-                        <p>{product.price} USD</p>
+                        <img src={product.variants[0].firstImage.url} alt={product.name} />
+                        <p>{product.variants[0].price} USD</p>
                         <a href={product.path}>View product</a>
                     </li>
                     ))}

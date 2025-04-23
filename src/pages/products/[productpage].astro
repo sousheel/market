@@ -2,59 +2,91 @@
 import { client } from '../../lib/crystallize';
 import { onMount } from 'solid-js';
 
+
+
 export function getStaticPaths() {
-  return [
-    { params: { slug: decodeURI("%5Bpage%5D"), productpage: "goon" }}, // decodes to "[page]"
-  ]
+    const productList = [
+        "dress-1"
+    ];
+
+    const staticPaths = productList.map((id) => ({
+        params: { slug: "ay", productpage: id },
+    }));
+
+    return staticPaths
 }
 
-const { slug } = Astro.params;
+const { slug, productpage } = Astro.params;
 
 let product = null;
 
-onMount(async () => {
-    const response = await client.catalogueApi(
-      `
-      query ($language: String!, $path: String!, $version: VersionLabel) {
+const response = await client.catalogueApi(
+    `
+    query ($language: String!, $path: String!, $version: VersionLabel!) {
         catalogue(path: $path, language: $language, version: $version) {
-          #your query based on shape
-          name
-          component(id: “description”){
-            …on richTextContent {
-               plantText
-            }
-          }
-          …on Product {
-             defaultVariant {
-                price
-                firstImage {
-                   variants {
-                     url
-                   }
+            id
+            name
+            path
+            ... on Product {
+                variants {
+                    name
+                    sku
+                    isDefault
+                    firstImage {
+                        url
+                        key
+                        caption {
+                            plainText
+                        }
+                    }
+                    images {
+                        variants {
+                            url
+                            key
+                        }
+                        caption {
+                            plainText
+                        }
+                    }
+                    stock
+                    price
+                    productId
+                    priceVariants {
+                        identifier
+                        price
+                    }
+                    stockLocations {
+                        identifier
+                        stock
+                    }
+                    attributes {
+                        attribute
+                        value
+                    }
                 }
-             }
-          }
+            }
         }
-      }
+    }
     `,
-      {
-        language: "en",
-        path: "/t-shirts",
-        // version: version === 'draft' ? 'draft' : 'published',
-      }
-    );
-    product = response.catalogue;
-});
+    {
+    language: "en",
+    path: "/dresses/" + productpage,
+    version: 'published',
+    }
+);
+product = response.catalogue;
+console.log(product);
 
-const { name, component, defaultVariant } = product?.data || {};
+// const { name, component, defaultVariant } = product;
 ---
 
 <html>
   <head>
-    <title>{name}</title>
+    <title>{product.name}</title>
   </head>
   <body>
-    <h1>{name}</h1>
+    <h1>{product.name}</h1>
+    <img src={product.variants[0].firstImage.url} alt={product.name} />
     <!-- <img src={defaultVariant.firstImage[0].url} alt={name} />
     <p>{component.description.plainText}</p>
     <p>{defaultVariant.price} USD</p> -->
