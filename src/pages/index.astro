@@ -1,19 +1,11 @@
 ---
-import { Grid } from "../components/grid";
-import { Products } from "../components/products";
-import Layout from "../layouts/Layout.astro";
-import { fetchFrontPage } from "../use-cases/queries/frontpage.ts";
+import Welcome from '../components/Welcome.astro';
+import Layout from '../layouts/Layout.astro';
 
-const data = await fetchFrontPage("/frontpage", "published");
-const { catalogue, donuts } = data;
-const { grid } = catalogue;
+// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
+// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
-<Layout
-  title="Dounot"
-  description="Dounut is a minimal boilerplate built using AstroJS that helps you get started with Crystallize.">
-  <div class="py-10 lg:container mx-auto w-full md:px-0 px-3">
-    <Grid grid={grid} />
-    <Products donuts={donuts} />
-  </div>
+<Layout>
+	<Welcome />
 </Layout>

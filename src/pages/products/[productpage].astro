@@ -1,0 +1,62 @@
+---
+import { client } from '../../lib/crystallize';
+import { onMount } from 'solid-js';
+
+export function getStaticPaths() {
+  return [
+    { params: { slug: decodeURI("%5Bpage%5D"), productpage: "goon" }}, // decodes to "[page]"
+  ]
+}
+
+const { slug } = Astro.params;
+
+let product = null;
+
+onMount(async () => {
+    const response = await client.catalogueApi(
+      `
+      query ($language: String!, $path: String!, $version: VersionLabel) {
+        catalogue(path: $path, language: $language, version: $version) {
+          #your query based on shape
+          name
+          component(id: “description”){
+            …on richTextContent {
+               plantText
+            }
+          }
+          …on Product {
+             defaultVariant {
+                price
+                firstImage {
+                   variants {
+                     url
+                   }
+                }
+             }
+          }
+        }
+      }
+    `,
+      {
+        language: "en",
+        path: "/t-shirts",
+        // version: version === 'draft' ? 'draft' : 'published',
+      }
+    );
+    product = response.catalogue;
+});
+
+const { name, component, defaultVariant } = product?.data || {};
+---
+
+<html>
+  <head>
+    <title>{name}</title>
+  </head>
+  <body>
+    <h1>{name}</h1>
+    <!-- <img src={defaultVariant.firstImage[0].url} alt={name} />
+    <p>{component.description.plainText}</p>
+    <p>{defaultVariant.price} USD</p> -->
+  </body>
+</html>
