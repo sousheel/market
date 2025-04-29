@@ -77,7 +77,7 @@ console.log(products.children);
                 <h1>{products.name}</h1>
                 <ul>
                     {products.children.map((product) => (
-                    <li key={product.id}>
+                    <li data-key={product.id}>
                         <a href={`/products/${product.path}`}></a>
                         <h2>{product.name}</h2>
                         <img src={product.variants[0].firstImage.url} alt={product.name} />

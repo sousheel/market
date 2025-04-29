@@ -1,0 +1,28 @@
+---
+import Base from "../../layouts/CheckoutReturn.astro";
+import Stripe from 'stripe'
+
+const PUBLIC_STRIPE_KEY = import.meta.env.STRIPE_PUBLISHABLE_KEY
+const STRIPE_SECRET_KEY = import.meta.env.STRIPE_SECRET_KEY
+
+export const prenender = false 
+const stripe = new Stripe(STRIPE_SECRET_KEY)
+const sessionID = Astro.url.searchParams.get('session_id')
+
+let session 
+try {
+  session = await stripe.checkout.sessions.retrieve(sessionID!)
+} catch (e) {
+  return Astro.redirect('/purchase/checkout')
+}
+
+
+const { name, email } = session.customer_details!
+---
+
+<CheckoutReturn>
+  <div>
+    <h1>Thank you for your purchase, {name}!</h1>
+    <p>We've sent a receipt to {email}.</p>
+  </div>
+</CheckoutReturn>
